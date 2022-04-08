@@ -55,3 +55,61 @@ select sysdate from dual;
 -- 날짜 형식을 변경할 때.
 alter session set NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS';
 commit;
+
+select systimestamp from dual;
+
+-- hiredate+3은 입사일자의 날짜에 3을 더한 결과
+-- hiredate+5/24는 입사일자의 시간에 5를 더한 결과
+select ename, hiredate, hiredate+3, hiredate+5/24 from emp where deptno = 30;
+
+-- 66
+select ename, hiredate, sysdate, 
+        sysdate-hiredate "Total Days", --현재날짜-입사일자 = 전체근무일수
+        TRUNC((sysdate-hiredate)/7, 0) Weeks, --1주일 7일 이기 때문에 7로 나눔
+        ROUND(MOD((sysdate-hiredate), 7), 0) Days -- mod는 나머지, 7로 나누면 나머지가 0~6까지 출력
+from emp order by 4 desc;
+
+select
+    EXTRACT(day from sysdate) 일자, -- 현재 날짜에서 일을 반환
+    EXTRACT(month from sysdate) 달,
+    EXTRACT(year from sysdate) 년도
+from dual;
+
+select
+    SYSTIMESTAMP,
+    TO_CHAR(SYSTIMESTAMP, 'HH24') CH, -- +09:00 9시간 빠르다, 문자형식 24시간으로 표현하는데 현재시간 출력
+    EXTRACT(TIMEZONE_HOUR from SYSTIMESTAMP) ETZH, -- 대한민국의 타임존 시간은 9시간
+    EXTRACT(HOUR from SYSTIMESTAMP) EH, -- 11-9(타임존 시간) = 2 출력
+    EXTRACT(HOUR from CAST(SYSTIMESTAMP AS TIMESTAMP)) EHC
+    -- systimestamp를 timestamp형식으로 형변환 후에 시간을 출력하면 정상적인 시간 출력
+from dual;
+
+
+select
+    SYSTIMESTAMP,
+    TO_CHAR(SYSTIMESTAMP, 'HH24') H1,
+    EXTRACT(HOUR from SYSTIMESTAMP) +
+    + EXTRACT(TIMEZONE_HOUR from SYSTIMESTAMP) H2
+from dual;
+
+select ename, hiredate, 
+    EXTRACT(YEAR from hiredate) "year",
+    EXTRACT(MONTH from hiredate) "month",
+    EXTRACT(DAY from hiredate) "day"
+from emp;
+
+ select ename, hiredate, sysdate, 
+    months_between(sysdate, hiredate) m_between,
+    -- 현재날짜에서 입사날짜 까지의 개월수
+    trunc(months_between(sysdate, hiredate), 0) t_between
+from emp where deptno = 10 order by m_between desc;
+
+select ename, hiredate, 
+    add_months(hiredate, 5) a_month --입사일자에서 5개월을 더한 결과 출력
+from emp where deptno IN(10, 30) order by hiredate desc;
+
+select ename, hiredate, 
+    next_day(hiredate, 6) n_6, -- 입사일자 이후 돌아오는 금요일 날짜 출력
+    next_day(hiredate, 7) n_7 -- 일사입자 이후 돌아오는 토요일 날짜 출력
+from emp where deptno = 10 order by hiredate desc;
+
